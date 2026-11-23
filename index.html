@@ -172,7 +172,7 @@ input[type=range]{width:100%;accent-color:var(--red)}
   <div class="card" id="cartList"></div>
   <div class="card"><h5>Когда привезти</h5><div class="chips" style="margin-top:8px" id="slot"><button class="chip on">Сегодня 19–20</button><button class="chip">Завтра 9–10</button><button class="chip">Заберу сам по QR</button></div></div>
   <div class="card"><div class="row"><span class="p">Товары</span><span class="amt" id="cSum"></span></div><div class="row"><span class="p disc">Скидка по рецептам 7%</span><span class="amt disc" id="cR7"></span></div><div class="row"><span class="p disc">Бренды-партнёры в рецептах 15%</span><span class="amt disc" id="cR15"></span></div>
-    <label class="check" style="margin:8px 0"><input type="checkbox" id="cMag" checked> Списать магнитики (до 50% чека)</label><div class="row"><span class="p">Магнитиками</span><span class="amt" id="cMagV"></span></div>
+    <label class="check" style="margin:8px 0"><input type="checkbox" id="cMag" checked> Списать магнитики (до 35% чека)</label><div class="row"><span class="p">Магнитиками</span><span class="amt" id="cMagV"></span></div>
     <div class="row" style="margin-top:6px"><b>К оплате</b><b class="big" style="font-size:22px" id="cTot"></b></div><p class="mut">С кошелька · счёт «Продукты» · +1% магнитиками за оплату кошельком</p></div>
   <button class="btn" id="cBuy">Оформить</button>
 </section>
@@ -186,7 +186,7 @@ input[type=range]{width:100%;accent-color:var(--red)}
 <section id="pay" data-t="Оплата">
   <div class="card dark" style="text-align:center"><div class="mut" style="color:#bbb">Покажите на кассе: карта, оплата и магнитики в одном QR</div><div class="qr" id="qrPay"></div><div class="row" style="justify-content:center;gap:8px"><span class="badge">СБП</span><span class="badge" id="offB">Работает без интернета</span></div></div>
   <div class="card"><h5>Откуда списать</h5><div class="chips" style="margin-top:8px"><button class="chip on">Счёт «Продукты» · 4 200 ₽</button><button class="chip">Общий баланс</button><button class="chip">СБП из банка</button></div>
-  <div class="row" style="margin-top:10px"><span class="p">Списывать магнитики автоматически</span><span class="badge ok">до 50% чека</span></div></div>
+  <div class="row" style="margin-top:10px"><span class="p">Списывать магнитики автоматически</span><span class="badge ok">до 35% чека</span></div></div>
   <div class="card pink"><p><b>Почему выгодно.</b> По СБП Магнит платит банку 0,4–0,7% вместо 1–2,5% по карте. Половину экономии возвращаем вам: +1% магнитиками за оплату кошельком.</p></div>
   <label class="check"><input type="checkbox" id="offT"> Показать, что будет без интернета</label>
   <button class="btn" id="payBtn">Смоделировать оплату чека 1 840 ₽</button>
