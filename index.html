@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Магнит. Семейная экосистема: полный прототип</title>
+<style>
+/* VOICE: настоящее приложение крупного ритейлера, спокойное и понятное, как СберБанк Онлайн
+   IDEA: главный экран = кошелёк семьи + каталог сервисов по группам; всё платное видно сразу с пометкой пакета
+   PICTURE: телефон с живыми экранами, слева карта стратегии для жюри
+   COLOUR and TYPE: красный Магнита, чёрный, белый, серый; Montserrat
+   LAYOUT: слева карта (на мобильном прячется в меню), справа телефон */
+:root{--red:#EC1D27;--dred:#B5101A;--ink:#1A1A1A;--g1:#F3F3F5;--g2:#6B6B6B;--line:#E6E6E8;--pink:#FDECEC;--ok:#168A4C;--gold:#C8941A;--font:'Montserrat',system-ui,-apple-system,Segoe UI,sans-serif;color-scheme:light}
+*{box-sizing:border-box;margin:0;padding:0;min-width:0}
+html,body{height:100%}
+body{font-family:var(--font);background:#ECECEF;color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:clip}
+button,input,select{font-family:var(--font);font-size:16px;color:inherit}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:36px;max-width:1240px;margin:0 auto;padding:24px;min-height:100%;align-items:start}
+.map{position:sticky;top:16px}
+.map h1{font-size:34px;line-height:1.08;font-weight:900;letter-spacing:-.6px;text-wrap:balance}.map h1 b{color:var(--red)}
+.goal{margin:14px 0 14px;background:var(--ink);color:#fff;border-radius:18px;padding:16px 18px;font-size:15px;line-height:1.45}
+.goal .k{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.goal .k span{background:#2b2b2b;border-radius:10px;padding:6px 10px;font-size:13px;font-weight:700}.goal .k i{font-style:normal;color:#ff8a90}
+.stage{border-radius:16px;padding:12px 14px;margin-bottom:8px;background:#fff}
+.stage h3{font-size:12px;font-weight:900;color:var(--red)}.stage h4{font-size:16px;font-weight:800;margin:2px 0 8px}
+.links{display:flex;flex-wrap:wrap;gap:6px}
+.links a{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink);background:var(--g1);border-radius:10px;padding:6px 9px;font-size:12.5px;font-weight:700;min-height:34px}
+.links a b{background:var(--red);color:#fff;border-radius:6px;font-size:10.5px;padding:2px 6px}
+.links a:hover,.links a.on{background:var(--ink);color:#fff}
+.stage.s2{background:var(--pink)}.stage.s3{border:2px solid var(--red)}
+.note{font-size:12px;color:var(--g2);margin-top:6px}
+.phone{position:sticky;top:16px;width:420px;height:min(880px,calc(100vh - 32px));background:#fff;border:10px solid var(--ink);border-radius:46px;box-shadow:0 30px 80px rgba(0,0,0,.28);overflow:hidden;overflow:clip}
+.inner{position:relative;display:flex;flex-direction:column;height:100%;overflow:hidden;overflow:clip;background:#fff}
+.status{display:flex;justify-content:space-between;padding:10px 22px 2px;font-size:13px;font-weight:800}
+.top{display:flex;align-items:center;gap:10px;padding:6px 16px 8px}
+.logo{width:34px;height:34px;border-radius:9px;background:var(--red);display:grid;place-items:center;color:#fff;font-weight:900;font-size:18px;flex:none}
+.top .t{font-weight:900;font-size:17px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ib{border:0;background:var(--g1);border-radius:12px;min-width:38px;height:38px;font-size:18px;font-weight:800;cursor:pointer;padding:0 10px}
+.badge{font-size:11px;font-weight:800;border-radius:20px;padding:4px 9px;background:var(--pink);color:var(--red);white-space:nowrap;display:inline-block}
+.badge.gold{background:#FFF3D6;color:#7A5600}.badge.ok{background:#E3F5EA;color:var(--ok)}
+main{flex:1;overflow-y:auto;padding:2px 16px 90px}
+section{display:none;flex-direction:column;gap:12px}section.on{display:flex}
+h2{font-size:21px;font-weight:900;letter-spacing:-.3px}h5{font-size:15px;font-weight:800}
+p,.p{font-size:13px;line-height:1.45}.mut{color:var(--g2);font-size:12px;font-weight:600}
+.card{background:var(--g1);border-radius:20px;padding:14px}.card.red{background:var(--red);color:#fff}.card.dark{background:var(--ink);color:#fff}.card.pink{background:var(--pink)}.card.line{background:#fff;border:2px solid var(--line)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.big{font-size:28px;font-weight:900;letter-spacing:-.6px;white-space:nowrap}.mid{font-size:18px;font-weight:800}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:13px 16px;background:var(--red);color:#fff;font-weight:800;cursor:pointer;min-height:48px;text-align:center}
+.btn.sec{background:#fff;color:var(--red);border:2px solid var(--red)}.btn.dark{background:var(--ink)}.btn.ghost{background:var(--g1);color:var(--ink)}
+.btn.sm{width:auto;display:inline-block;padding:8px 14px;min-height:38px;font-size:13px;border-radius:12px}
+.btn:disabled{opacity:.4}
+:focus-visible{outline:3px solid #2563eb;outline-offset:2px}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.q{border:0;background:rgba(255,255,255,.16);color:#fff;border-radius:14px;padding:10px 4px;font-size:11px;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:64px}
+.q svg{width:22px;height:22px}
+.stories{display:flex;gap:10px;overflow-x:auto;padding-bottom:2px}
+.story{flex:none;width:86px;height:104px;border-radius:16px;padding:9px;color:#fff;font-size:11.5px;font-weight:800;display:flex;align-items:flex-end;cursor:pointer;border:3px solid #fff;box-shadow:0 0 0 2px var(--red);text-align:left;line-height:1.2}
+.grp h5{margin:4px 0 8px}
+.svc{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.sv{border:0;background:var(--g1);border-radius:16px;padding:10px 4px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;font-weight:700;line-height:1.2;text-align:center;position:relative;min-height:92px}
+.sv .ic{width:40px;height:40px;border-radius:12px;background:#fff;display:grid;place-items:center}
+.sv .ic svg{width:22px;height:22px;stroke:var(--red)}
+.sv .lk{position:absolute;top:4px;right:4px;background:var(--ink);color:#fff;font-size:8.5px;font-weight:900;border-radius:6px;padding:2px 4px}
+.sv .nb{display:none!important;position:absolute;top:4px;left:4px;background:var(--red);color:#fff;font-size:9px;font-weight:900;border-radius:6px;padding:1px 4px}
+.bar{height:10px;background:#E2E2E2;border-radius:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--red);border-radius:6px;transition:width .5s}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chip{border:2px solid var(--line);background:#fff;border-radius:20px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer;min-height:38px}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.hs{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
+.li{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}.li:last-child{border:0}
+.av{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:900;color:#fff;flex:none}
+.li .f{flex:1}.li .f b{display:block;font-size:14px}.li .f span{font-size:12px;color:var(--g2);font-weight:600}
+.amt{font-weight:800;white-space:nowrap}
+.prod{flex:none;width:136px;background:var(--g1);border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:6px}
+.prod .im{height:72px;border-radius:12px;display:grid;place-items:center;font-size:12px;font-weight:900;color:#fff}
+.prod b{font-size:12.5px;line-height:1.25}.prod .pr{display:flex;justify-content:space-between;align-items:center}
+.plus{border:0;background:var(--red);color:#fff;width:34px;height:34px;border-radius:10px;font-size:20px;font-weight:900;cursor:pointer}
+.rec{flex:none;width:170px;border-radius:16px;overflow:hidden;background:var(--g1);cursor:pointer;border:0;text-align:left}
+.rec .im{height:90px;display:flex;align-items:flex-end;padding:8px;color:#fff;font-weight:900;font-size:13px}
+.rec .tx{padding:8px 10px;font-size:11.5px;font-weight:700;color:var(--g2)}
+.cartbar{position:absolute;left:16px;right:16px;bottom:78px;background:var(--red);color:#fff;border-radius:16px;padding:12px 16px;display:none;justify-content:space-between;align-items:center;font-weight:800;cursor:pointer;z-index:4;box-shadow:0 10px 24px rgba(236,29,39,.35);border:0;font-size:15px}
+.cartbar.on{display:flex}
+.qr{width:200px;height:200px;margin:6px auto;background:#fff;border-radius:16px;padding:10px;display:grid;grid-template-columns:repeat(21,1fr)}.qr i.k{background:var(--ink)}
+.tabs{position:absolute;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--line);background:#fff;padding:6px 4px 12px;z-index:3}
+.tab{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:800;color:var(--g2);cursor:pointer;min-height:48px}
+.tab svg{width:22px;height:22px}.tab.on{color:var(--red)}
+.tab.qrb .c{width:52px;height:52px;margin-top:-22px;border-radius:50%;background:var(--red);display:grid;place-items:center;color:#fff;box-shadow:0 6px 16px rgba(236,29,39,.4)}
+.toast{position:absolute;left:12px;right:12px;top:10px;background:var(--ink);color:#fff;border-radius:16px;padding:12px 14px;font-size:13px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.3);transform:translateY(-130%);opacity:0;transition:transform .35s,opacity .35s;z-index:9;display:flex;gap:10px;align-items:flex-start;pointer-events:none}
+.toast.on{transform:none;opacity:1}.toast .lg{width:28px;height:28px;border-radius:8px;background:var(--red);display:grid;place-items:center;font-weight:900;flex:none}
+.shade{position:absolute;inset:0;background:rgba(0,0,0,.4);z-index:7;display:none}.shade.on{display:block}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:24px 24px 0 0;padding:18px 16px 22px;z-index:8;transform:translateY(105%);transition:transform .3s;display:flex;flex-direction:column;gap:10px;max-height:85%;overflow:auto}
+.sheet.on{transform:none}.grab{width:44px;height:5px;border-radius:3px;background:#ccc;margin:0 auto 4px}
+input[type=range]{width:100%;accent-color:var(--red)}
+.inp{width:100%;border:2px solid var(--line);border-radius:12px;padding:11px 12px;font-weight:700;background:#fff}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}.tbl td,.tbl th{padding:7px 3px;border-bottom:1px solid var(--line);text-align:center}.tbl td:first-child,.tbl th:first-child{text-align:left;font-weight:700}
+.yes{color:var(--ok);font-weight:900}.no{color:#bbb}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:13px;font-weight:600}.check input{width:22px;height:22px;accent-color:var(--red);flex:none}
+.err{background:#FFE4E4;border-radius:10px;padding:8px}
+.steps{display:flex;gap:4px}.steps i{flex:1;height:5px;border-radius:3px;background:#E2E2E2}.steps i.on{background:var(--red)}
+.opt{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ob{border:2px solid var(--line);background:#fff;border-radius:14px;padding:12px;font-weight:700;font-size:13px;text-align:left;cursor:pointer;min-height:48px}
+.ob.on{border-color:var(--red);background:var(--pink)}
+.cnt{display:flex;align-items:center;gap:12px}.cnt button{width:40px;height:40px;border-radius:12px;border:0;background:var(--g1);font-size:20px;font-weight:900;cursor:pointer}.cnt b{font-size:20px;min-width:24px;text-align:center}
+.disc{color:var(--ok);font-weight:800;font-size:12px}
+.big55 p,.big55 .p,.big55 .li .f b{font-size:16px}.big55 h2{font-size:25px}.big55 .btn{font-size:19px;min-height:56px}.big55 .sv{font-size:13px}
+.menu{display:none}
+@media(max-width:900px){.wrap{grid-template-columns:1fr;padding:0}.map{display:none;position:fixed;inset:0;z-index:20;background:#ECECEF;overflow:auto;padding:20px}.map.open{display:block}.phone{width:100%;height:100vh;border:0;border-radius:0;top:0}.menu{display:inline-block}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+.stories,.hs{scrollbar-width:none;scroll-behavior:smooth}.stories::-webkit-scrollbar,.hs::-webkit-scrollbar{display:none}
+.sw{position:relative}.sa{position:absolute;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:50%;border:none;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.25);font:700 18px var(--font);color:#E41C27;cursor:pointer;z-index:3;display:flex;align-items:center;justify-content:center}.sa.l{left:-4px}.sa.r{right:-4px}.sa[hidden]{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+<aside class="map" id="map">
+  <h1>Магнит становится <b>семейной экосистемой</b></h1>
+  <div class="goal"><strong>Цель к 2031 году.</strong> Магнит оркестрирует семейные финансы, банк-партнёр ВТБ держит лицензию и риск: 6,5 млн клиентов в бесплатном семейном контуре, 1,9 млн подписчиков пакетов, +7,5 млрд ₽ к EBITDA, окупаемость в 2029.<div class="k"><span><i>11%</i> оборота через кошелёк и СБП</span><span><i>+6%</i> к частоте покупок: 31 → 33 в месяц</span><span><i>2 821 ₽</i> в месяц остаётся у семьи с «Семейным +»</span><span><i>0</i> скрытых платных опций</span></div></div>
+  <div class="stage"><h3>СТУПЕНЬ 1 · ТЕХНИЧЕСКАЯ ОСНОВА</h3><h4>Платить дешевле и быстрее</h4><div class="links" data-links="1"></div></div>
+  <div class="stage s2"><h3>СТУПЕНЬ 2 · БЕСПЛАТНЫЙ «СЕМЕЙНЫЙ КОНТУР»</h3><h4>Собрать чек всей семьи</h4><div class="links" data-links="2"></div></div>
+  <div class="stage s3"><h3>СТУПЕНЬ 3 · ПЛАТНЫЙ УРОВЕНЬ</h3><h4>Шесть пакетов и клуб заботы</h4><div class="links" data-links="3"></div></div>
+  <p class="note">Концепт-прототип студенческого решения кейса «Выше мечты», не официальный продукт ПАО «Магнит». Суммы, имена и товары условные. Три ступени и пакеты, как на слайдах 7–8 презентации. Расчёты: финмодель v5.</p>
+  <button class="btn dark menu" style="margin-top:12px" id="closeMap">Вернуться в приложение</button>
+</aside>
+
+<div class="phone"><div class="inner" id="app">
+  <div class="status"><span>9:41</span><span id="net">5G ▮▮▮</span></div>
+  <div class="top"><button class="ib" id="back" aria-label="Назад" hidden>‹</button><div class="logo">М</div><div class="t" id="ttl">Магнит</div><span class="badge gold">Крепкая семья</span><button class="ib menu" id="openMap">Карта</button></div>
+  <div class="toast" id="toast"><div class="lg">М</div><div id="toastT"></div></div>
+  <main id="main">
+
+<section id="home" data-t="Магнит">
+  <input class="inp" placeholder="Поиск: товары, сервисы, рецепты" aria-label="Поиск" style="background:var(--g1);border-color:var(--g1)">
+  <div class="stories" id="stories"></div>
+  <div class="card red">
+    <div class="row"><span style="font-size:12px;font-weight:700;color:#ffd5d7">Кошелёк семьи Орловых · 4 человека</span><span class="badge" style="background:#fff">1 магнитик = 1 ₽</span></div>
+    <div class="row" style="margin-top:8px;align-items:flex-end"><div><div class="big" id="hBal">6 480 ₽</div><div style="font-size:12px;font-weight:700">на счетах семьи</div></div><div style="text-align:right"><div class="mid" id="hMag">1 240</div><div style="font-size:12px;font-weight:700">магнитиков</div></div></div>
+    <div class="quick">
+      <button class="q" data-go="pay"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v7h-6"/></svg>Оплатить</button>
+      <button class="q" data-go="topup"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Пополнить</button>
+      <button class="q" data-go="topupRel"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 12h12M12 6l6 6-6 6"/></svg>Близким</button>
+      <button class="q" data-go="wallet"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M16 12h3"/></svg>Счета</button>
+    </div>
+  </div>
+  <div class="card dark" data-go="club" style="cursor:pointer">
+    <div class="mut" style="color:#bbb">Семья в ноябре · цель клуба 25 покупок</div><div class="mid">24 покупки · выгода 3 270 ₽</div>
+    <div class="bar" style="margin-top:8px;background:#444"><i style="width:96%"></i></div>
+    <p style="font-size:12px;margin-top:6px;color:#ddd">Ещё 1 покупка до «Золотой семьи» и 3-го места в рейтинге района</p>
+  </div>
+  <div class="card" data-go="piggy" style="cursor:pointer"><div class="row"><h5>Копилка «Море летом»</h5><span class="amt" id="hPig">74 400 ₽</span></div><div class="bar" style="margin-top:8px"><i id="hPigBar" style="width:62%"></i></div><p class="mut" style="margin-top:6px">Цель 120 000 ₽ · округление и 100 ₽ с покупки семьи</p></div>
+  <div id="catalog"></div>
+  <p class="mut" style="text-align:center;padding:6px 0">Концепт-прототип для кейс-чемпионата «Выше мечты». Не приложение ПАО «Магнит», данные условные</p>
+</section>
+
+<section id="delivery" data-t="Доставка">
+  <div class="card" style="padding:12px"><div class="row"><div><b style="font-size:14px">Доставим за 30 минут</b><div class="mut">ул. Ленина, 12 · из Магнита у дома</div></div><span class="badge ok">бесплатно от 1 500 ₽</span></div></div>
+  <button class="card red" data-svc="ai" style="border:0;text-align:left;cursor:pointer"><div class="row"><div><span class="badge" style="background:#fff">ИИ-помощник</span><h5 style="margin-top:6px">Корзина на неделю под ваш бюджет</h5><p style="font-size:12px;margin-top:2px">Ответьте на 5 вопросов, выберите блюда, корзина соберётся сама</p></div><span style="font-size:28px;font-weight:900">›</span></div></button>
+  <div class="row"><h5>Рецепты Магнита</h5><span class="mut">−7% на ингредиенты</span></div>
+  <div class="hs" id="recShelf"></div>
+  <div class="row"><h5>Под настроение · 30 минут</h5><span class="badge">4</span></div>
+  <div class="hs" id="moodShelf"></div>
+  <button class="card pink" data-svc="meals" style="border:0;text-align:left;cursor:pointer"><div class="row"><div><span class="badge">подписка «Без хлопот»</span><h5 style="margin-top:6px">Готовая еда и выпечка по расписанию</h5><p class="mut">Соберите неделю один раз, привезём в ваши дни</p></div><span style="font-size:28px;font-weight:900;color:var(--red)">›</span></div></button>
+  <div class="row"><h5>Часто покупаете</h5><button class="btn sm ghost" data-svc="fav">★ Любимый продукт −7%</button></div>
+  <div class="hs" id="popShelf"></div>
+</section>
+
+<section id="recipe" data-t="Рецепт">
+  <div class="card" style="padding:0;overflow:hidden"><div id="recHero" style="height:130px;display:flex;align-items:flex-end;padding:14px;color:#fff;font-weight:900;font-size:20px"></div>
+  <div style="padding:14px"><div class="row"><span class="mut" id="recMeta"></span><div class="cnt"><button id="pm" aria-label="Меньше порций">−</button><b id="pn">4</b><button id="pp" aria-label="Больше порций">+</button></div></div><p class="mut" style="margin-top:4px;text-align:right">порций</p></div></div>
+  <div class="card"><div class="row"><h5>Ингредиенты</h5><span class="mut">цены уже со скидкой</span></div><div id="recIng"></div></div>
+  <button class="btn" id="recAdd">Добавить всё в корзину</button>
+</section>
+
+<section id="cart" data-t="Корзина">
+  <div class="card" id="cartList"></div>
+  <div class="card"><h5>Когда привезти</h5><div class="chips" style="margin-top:8px" id="slot"><button class="chip on">Сегодня 19–20</button><button class="chip">Завтра 9–10</button><button class="chip">Заберу сам по QR</button></div></div>
+  <div class="card"><div class="row"><span class="p">Товары</span><span class="amt" id="cSum"></span></div><div class="row"><span class="p disc">Скидка по рецептам 7%</span><span class="amt disc" id="cR7"></span></div><div class="row"><span class="p disc">Бренды-партнёры в рецептах 15%</span><span class="amt disc" id="cR15"></span></div>
+    <label class="check" style="margin:8px 0"><input type="checkbox" id="cMag" checked> Списать магнитики (до 50% чека)</label><div class="row"><span class="p">Магнитиками</span><span class="amt" id="cMagV"></span></div>
+    <div class="row" style="margin-top:6px"><b>К оплате</b><b class="big" style="font-size:22px" id="cTot"></b></div><p class="mut">С кошелька · счёт «Продукты» · +1% магнитиками за оплату кошельком</p></div>
+  <button class="btn" id="cBuy">Оформить</button>
+</section>
+
+<section id="ai" data-t="Корзина на неделю">
+  <div class="steps" id="aiSteps"></div>
+  <div id="aiBody" style="display:flex;flex-direction:column;gap:12px"></div>
+  <div class="row" style="gap:8px"><button class="btn ghost" id="aiPrev" style="width:40%">Назад</button><button class="btn" id="aiNext">Дальше</button></div>
+</section>
+
+<section id="pay" data-t="Оплата">
+  <div class="card dark" style="text-align:center"><div class="mut" style="color:#bbb">Покажите на кассе: карта, оплата и магнитики в одном QR</div><div class="qr" id="qrPay"></div><div class="row" style="justify-content:center;gap:8px"><span class="badge">СБП</span><span class="badge" id="offB">Работает без интернета</span></div></div>
+  <div class="card"><h5>Откуда списать</h5><div class="chips" style="margin-top:8px"><button class="chip on">Счёт «Продукты» · 4 200 ₽</button><button class="chip">Общий баланс</button><button class="chip">СБП из банка</button></div>
+  <div class="row" style="margin-top:10px"><span class="p">Списывать магнитики автоматически</span><span class="badge ok">до 50% чека</span></div></div>
+  <div class="card pink"><p><b>Почему выгодно.</b> По СБП Магнит платит банку 0,4–0,7% вместо 1–2,5% по карте. Половину экономии возвращаем вам: +1% магнитиками за оплату кошельком.</p></div>
+  <label class="check"><input type="checkbox" id="offT"> Показать, что будет без интернета</label>
+  <button class="btn" id="payBtn">Смоделировать оплату чека 1 840 ₽</button>
+</section>
+
+<section id="wallet" data-t="Счета семьи">
+  <p class="mut">Деньги разложены по целям заранее, на кассе просто списание. Работают в Магните, Магнит Косметик и Магнит Аптеке</p>
+  <div id="accs"></div>
+  <div class="card line"><h5>Открыть ещё счёт</h5><div class="chips" id="newAcc" style="margin-top:8px"><button class="chip">Школа</button><button class="chip">Питомец</button><button class="chip">Для бабушки</button><button class="chip">Праздник</button></div></div>
+  <div class="card"><h5>История</h5><div id="ops"></div></div>
+</section>
+<section id="topup" data-t="Пополнить">
+  <div class="card"><p class="mut">По СБП из любого банка, без комиссии</p><div class="chips" style="margin:8px 0"><button class="chip on">ВТБ</button><button class="chip">Сбер</button><button class="chip">Т-Банк</button><button class="chip">Альфа</button></div><input class="inp" id="tuSum" value="5000" inputmode="numeric" aria-label="Сумма"><p class="mut" style="margin-top:6px">На счёт «Продукты» · +50 магнитиков за пополнение</p></div>
+  <button class="btn" id="tuBtn">Пополнить</button>
+</section>
+<section id="topupRel" data-t="Пополнить близкому">
+  <div class="card"><p class="mut">Игорь пополняет бабушке счёт «Продукты»: деньги тратятся только в магазине, остаток бабушка видит на кассе</p><div class="li"><div class="av" style="background:#0a8">Б</div><div class="f"><b>Бабушка</b><span>счёт «Продукты» · именная карта</span></div></div><div class="chips" style="margin:8px 0"><button class="chip">2 000 ₽</button><button class="chip on">5 000 ₽</button><button class="chip">10 000 ₽</button></div><label class="check"><input type="checkbox" checked> Пополнять каждый понедельник</label></div>
+  <button class="btn" id="relBtn">Перевести 5 000 ₽</button>
+</section>
+<section id="piggy" data-t="Семейная копилка">
+  <div class="card red"><div style="font-size:12px;font-weight:700;color:#ffd5d7">Копилка «Море летом» · счёт в ВТБ</div><div class="big" id="pSum">74 400 ₽</div><div class="bar" style="background:#ff8a90;margin-top:6px"><i id="pBar" style="background:#fff;width:62%"></i></div><p style="font-size:12px;margin-top:6px;font-weight:700">Цель 120 000 ₽ к июню · вклады застрахованы до 1,4 млн ₽</p></div>
+  <div class="card"><h5>Автовзнос с каждой покупки</h5><div class="chips" id="auto" style="margin-top:8px"><button class="chip">50 ₽</button><button class="chip on">100 ₽</button><button class="chip">200 ₽</button></div><p class="mut" style="margin-top:8px">25 покупок семьи в месяц = <b id="autoM">2 500 ₽</b> в копилку</p></div>
+  <div class="card"><h5>Кто копит</h5><div class="li"><div class="av" style="background:var(--red)">О</div><div class="f"><b>Ольга</b><span>36 400 ₽</span></div></div><div class="li"><div class="av" style="background:#333">И</div><div class="f"><b>Игорь</b><span>26 100 ₽</span></div></div><div class="li"><div class="av" style="background:#0a8">Б</div><div class="f"><b>Бабушка</b><span>11 900 ₽</span></div></div></div>
+</section>
+
+<section id="family" data-t="Семья">
+  <div class="card"><div class="row"><h5>Участники и права</h5><button class="btn sm sec" id="addM">+ Добавить</button></div><div id="members"></div></div>
+  <div class="grp"><h5>Что можно сделать вместе</h5><div class="svc" id="famSvc"></div></div>
+</section>
+<section id="task" data-t="Поручить покупку">
+  <p class="mut">Соберите список, Игорь получит QR. На кассе он сканирует его первым, касса сверит товары</p>
+  <div class="card"><div class="row"><h5>Для: Игорь (муж)</h5><span class="badge" id="tState">черновик</span></div><div id="tList" style="margin-top:6px"></div><button class="btn sm sec" id="tAdd" style="margin-top:8px">+ Сметана 15%</button></div>
+  <button class="btn" id="tSend">Отправить Игорю</button>
+  <div class="card dark" id="tQR" hidden style="text-align:center"><div class="mut" style="color:#bbb">QR-задание у Игоря в приложении</div><div class="qr" id="qrTask"></div><button class="btn sm" id="tScan">Что увидит касса</button></div>
+  <div class="card line" id="tKassa" hidden><h5>Касса №3 · сверка с заданием</h5><div id="kList"></div></div>
+</section>
+<section id="close" data-t="Забота о близких">
+  <div class="card"><h5>Календарь семьи</h5><div class="li"><div class="av" style="background:var(--red)">25</div><div class="f"><b>День рождения бабушки</b><span>через 3 дня · −20% на торт</span></div><button class="btn sm" id="cake">В корзину</button></div><div class="li"><div class="av" style="background:#333">1</div><div class="f"><b>1 сентября</b><span>школьный набор ×2 магнитиков</span></div></div></div>
+  <div class="card pink"><h5>Корзина для бабушки</h5><p>Соберите и оплатите, привезёт курьер или сотрудник донесёт до двери</p><div class="li"><div class="f"><b>Молоко, творог, хлеб, яблоки</b><span>6 товаров · 1 120 ₽</span></div><button class="btn sm" id="sendGran">Оплатить</button></div></div>
+</section>
+<section id="vouch" data-t="Карманные детям">
+  <div class="card"><div class="row"><h5>Маша, 12 лет</h5><span class="amt">750 / 1 500 ₽ в неделю</span></div><div class="bar" style="margin-top:8px"><i style="width:50%"></i></div><p class="mut" style="margin-top:6px">Можно: еда, фрукты, канцтовары. Нельзя: энергетики, сладкая газировка</p></div>
+  <div class="card line"><h5>Покупки Маши</h5><div class="li"><div class="f"><b>Энергетик 0,45 л</b><span>касса отклонила, вы получили уведомление</span></div><span class="badge">отклонено</span></div><div class="li"><div class="f"><b>Сэндвич и сок</b><span>оплачено ваучером</span></div><span class="amt">189 ₽</span></div></div>
+</section>
+<section id="split" data-t="Общая корзина">
+  <p class="mut">Заказ с коллегами: каждый платит за своё, привозим одной доставкой</p>
+  <div class="card"><div class="li"><div class="av" style="background:#333">Я</div><div class="f"><b>Вы</b><span>салат, морс</span></div><span class="amt">420 ₽</span></div><div class="li"><div class="av" style="background:#7a5cff">А</div><div class="f"><b>Аня</b><span>сэндвич, кофе</span></div><span class="amt">380 ₽</span></div><div class="li"><div class="av" style="background:#0a8">Д</div><div class="f"><b>Дима</b><span>пицца</span></div><span class="amt">560 ₽</span></div></div>
+  <button class="btn" id="splitBtn">Разделить и оплатить</button>
+</section>
+<section id="student" data-t="Сертификат студенту">
+  <p class="mut">Бабушка один раз вносит сумму, внук получает именную карту с лимитом на каждый месяц учёбы</p>
+  <div class="chips" id="dep"><button class="chip on" data-v="30000">30 000 ₽</button><button class="chip" data-v="50000">50 000 ₽</button><button class="chip" data-v="60000">60 000 ₽</button><button class="chip" data-v="100000">100 000 ₽</button></div>
+  <div class="card red"><div style="font-size:12px;font-weight:700;color:#ffd5d7">Лимит в месяц на 9 месяцев</div><div class="big" id="depM">3 333 ₽</div></div>
+  <div class="card"><h5>Предложение дня для студента</h5><div class="opt" style="margin-top:8px" id="offers"></div><p class="mut" style="margin-top:6px">Скидки только на свежую еду, молочку, мясо и бакалею</p></div>
+  <button class="btn" id="stBtn">Оформить сертификат</button>
+</section>
+
+
+<section id="eco" data-t="Экосистема">
+  <div class="card red"><h5>Магнит — оркестратор</h5><p style="margin-top:4px">Магнит держит клиента, данные чека и приложение. ВТБ держит лицензию, деньги и кредитный риск. Своего банка на старте нет.</p></div>
+  <div class="grp"><h5>Где работают магнитики</h5><div class="svc" style="grid-template-columns:1fr 1fr"><div class="card" style="margin:0"><b>Магнит у дома</b><p class="mut">и «Семейный»</p></div><div class="card" style="margin:0"><b>Косметик и Аптека</b><p class="mut">одна валюта</p></div><div class="card" style="margin:0"><b>Магнит Доставка</b><p class="mut">общая корзина</p></div><div class="card" style="margin:0"><b>Партнёры</b><p class="mut">врачи, кружки, ветеринары</p></div></div></div>
+  <div class="card pink"><h5>Партнёрский пакет</h5><div class="li"><div class="f"><b>Телемедицина: педиатр ночью</b></div><span class="amt">−15%</span></div><div class="li"><div class="f"><b>Анализы для всей семьи</b></div><span class="amt">−10%</span></div><div class="li"><div class="f"><b>Кружки и онлайн-школы</b></div><span class="amt">−10%</span></div><div class="li"><div class="f"><b>Ветклиника</b></div><span class="amt">−10%</span></div></div>
+  <div class="card dark"><h5>Рецепт недели: сырники на всю семью</h5><p style="margin-top:4px;color:#ddd">Ингредиенты на 410 ₽, бренд-партнёр −15%</p><button class="btn" style="margin-top:8px" data-go="delivery">Открыть рецепты</button></div>
+  <div class="card"><h5>Шесть фильтров бренда</h5><div class="li"><div class="f"><b>Без скрытых комиссий и МФО</b></div></div><div class="li"><div class="f"><b>Данные только с согласия</b><span>152-ФЗ</span></div></div><div class="li"><div class="f"><b>Только полезное семье</b></div></div><div class="li"><div class="f"><b>Один опыт на кассе и в приложении</b></div></div><div class="li"><div class="f"><b>Деньги семьи выводятся свободно</b></div></div><div class="li"><div class="f"><b>Без раздувания штата</b></div></div></div>
+  <div class="card line"><h5>Экономика семьи с «Семейным +»</h5><div class="li"><div class="f"><b>Выгода за месяц</b></div><span class="amt">+3 270 ₽</span></div><div class="li"><div class="f"><b>Цена пакета</b></div><span class="amt">−449 ₽</span></div><div class="li"><div class="f"><b>Остаётся у семьи</b><span>33 852 ₽ в год</span></div><span class="amt disc">+2 821 ₽</span></div></div>
+</section>
+
+<section id="profile" data-t="Профиль">
+  <div class="card dark"><div class="row"><div><div class="mut" style="color:#bbb">Уровень в клубе заботы</div><div class="mid" style="color:#ffcc55">Крепкая семья</div></div><span class="badge gold">виден на кассе</span></div><p style="font-size:12px;margin-top:6px;color:#ddd">Следующий уровень «Золотая семья» при 25 покупках в месяц</p></div>
+  <div class="grp"><h5>Мои пакеты</h5><div id="myPk"></div><button class="btn" data-go="plans" style="margin-top:8px">Все пакеты и сравнение</button></div>
+  <div class="card"><div class="li" data-go="club" style="cursor:pointer"><div class="f"><b>Клуб заботы и рейтинг семей</b><span>уровни, вызовы недели</span></div><b>›</b></div><div class="li" data-go="care" style="cursor:pointer"><div class="f"><b>«Премиальная забота»</b><span>магнитики ×1,5 при тратах от 15 000 ₽ в месяц</span></div><b>›</b></div><div class="li" data-go="eco" style="cursor:pointer"><div class="f"><b>Экосистема Магнита</b><span>оркестратор, ВТБ, партнёры, 6 фильтров бренда</span></div><b>›</b></div><div class="li" data-svc="partners" style="cursor:pointer"><div class="f"><b>Партнёры</b><span>клиники, школы, кружки</span></div><b>›</b></div></div>
+  <label class="check card"><input type="checkbox" id="big"> Крупный шрифт и простой режим для старших</label>
+</section>
+<section id="plans" data-t="Пакеты">
+  <p class="mut">Бесплатный «Семейный контур» есть у всех. Пакет подключается только с вашего согласия, без галочек по умолчанию. Любую услугу можно взять отдельно</p>
+  <div class="chips" id="planTabs"></div>
+  <div class="card" id="planCard"></div>
+  <div class="card"><h5>Сравнение</h5><div style="overflow-x:auto"><table class="tbl" id="cmp"></table></div></div>
+  <div class="card"><h5>Конструктор: соберите свой пакет</h5><p class="mut" style="margin:4px 0 8px">От трёх модулей скидка 30%. Подключение только с вашего согласия.</p><div id="builder"></div></div>
+</section>
+<section id="club" data-t="Клуб заботы">
+  <div class="card"><h5>Уровни</h5><div class="li"><div class="av" style="background:#B87333">С</div><div class="f"><b>Своя семья</b><span>бесплатный уровень</span></div></div><div class="li"><div class="av" style="background:#8a8a8a">К</div><div class="f"><b>Крепкая семья</b><span>любой пакет или 15 000 ₽ покупок в месяц</span></div><span class="badge ok">вы здесь</span></div><div class="li"><div class="av" style="background:var(--gold)">З</div><div class="f"><b>Золотая семья</b><span>пакет и 25 покупок в месяц: закрытые дропы, своя касса в час пик</span></div></div></div>
+  <div class="card"><div class="row"><h5>Рейтинг семей района</h5><span class="badge">ноябрь</span></div><div id="board"></div></div>
+  <div class="card pink"><h5>Вызов недели</h5><p>Неделя без импульсивных покупок: 5 покупок строго по списку и +300 магнитиков всей семье</p><button class="btn sm" style="margin-top:8px" id="chal">Принять вызов</button></div>
+</section>
+<section id="mood" data-t="Подборка">
+  <div class="card pink"><h5 id="moodT">Подборка</h5><p class="mut" id="moodS">Выберите, что добавить в корзину. Привезём за 30 минут</p></div>
+  <div id="moodList"></div>
+</section>
+<section id="care" data-t="Премиальная забота">
+  <div class="card pink"><div class="row"><h5>Покупки семьи в ноябре</h5><span class="amt">11 200 / 15 000 ₽</span></div><div class="bar" style="margin-top:8px"><i style="width:75%"></i></div><p class="mut" style="margin-top:6px">Все форматы через семейный кошелёк. Статус продлевается каждый месяц, пока порог выполняется</p></div>
+  <div class="card"><h5>Выберите категорию с двойными магнитиками на декабрь</h5><div class="chips" style="margin-top:8px"><button class="chip on">Детские товары</button><button class="chip">Питомцы</button><button class="chip">Аптека</button><button class="chip">Косметика</button></div><p class="p" style="margin-top:8px">Магнитики <b>×1,5</b> на все покупки семьи, выбранная категория даёт <b>×2</b></p></div>
+</section>
+
+<section id="meals" data-t="Готовая еда по подписке">
+  <div class="card red"><h5>Ваша неделя</h5><p style="margin-top:4px">Выберите дни, мы привезём свежую еду и выпечку</p><div class="chips" id="days" style="margin-top:8px"><button class="chip on">Пн</button><button class="chip">Вт</button><button class="chip on">Ср</button><button class="chip">Чт</button><button class="chip on">Пт</button></div></div>
+  <div class="card"><h5>Меню на понедельник</h5><div class="li"><div class="f"><b>Курица с булгуром</b><span>обед · 289 ₽</span></div><button class="btn sm ghost">Заменить</button></div><div class="li"><div class="f"><b>Салат «Цезарь»</b><span>ужин · 249 ₽</span></div><button class="btn sm ghost">Заменить</button></div><div class="li"><div class="f"><b>Круассан и кофе</b><span>завтрак · 159 ₽</span></div><button class="btn sm ghost">Заменить</button></div></div>
+  <div class="card line"><div class="row"><h5>Умный ужин</h5><span class="badge">3</span></div><p class="mut">Помощник знает, когда вы возвращаетесь, и предложит готовый ужин, если на счёте хватает</p><button class="btn sm" id="dinner" style="margin-top:8px">Показать уведомление</button></div>
+  <button class="btn" id="mealsGo">Сохранить расписание</button>
+</section>
+<section id="fav" data-t="Любимый продукт">
+  <p class="mut">Выберите один товар недели: скидка 7% включится с понедельника</p>
+  <div class="opt" id="favList"></div>
+</section>
+<section id="kids" data-t="Детский клуб">
+  <div class="card red"><h5>Игрушка из коллекции за 1 ₽</h5><div class="row" style="margin-top:6px"><span class="big" id="kSum">3 100 ₽</span><span style="font-size:12px;font-weight:700;color:#ffd5d7">из 4 000 ₽ покупок за месяц</span></div><div class="bar" style="background:#ff8a90;margin-top:6px"><i id="kBar" style="background:#fff;width:78%"></i></div><button class="btn sm" id="kBuy" style="background:#fff;color:var(--red);margin-top:8px">+ покупка на 900 ₽</button></div>
+  <div class="card"><h5>Коллекция «Зимние друзья»</h5><div class="svc" id="coll" style="margin-top:8px;grid-template-columns:repeat(3,1fr)"></div></div>
+  <div class="card pink"><div class="row"><h5>Бокс на день рождения</h5><span class="badge">Маше 12 · 14 марта</span></div><p class="p">Сладости, лимитированная игрушка и сувениры. Соберём за 3 дня до праздника</p></div>
+</section>
+<section id="senior" data-t="Забота 55+">
+  <div class="card dark"><h5>Работает без смартфона</h5><p style="margin-top:4px">Пакет подключают на кассе по карте лояльности или пенсионному удостоверению, либо дети из своего аккаунта</p></div>
+  <div class="card"><h5>Что происходит на кассе</h5><div class="li"><div class="av" style="background:var(--red)">1</div><div class="f"><b>Кассир сканирует карту</b><span>на экране значок «Забота 55+»</span></div></div><div class="li"><div class="av" style="background:var(--red)">2</div><div class="f"><b>Скидки суммируются</b><span>утренняя пенсионная и акции</span></div></div><div class="li"><div class="av" style="background:var(--red)">3</div><div class="f"><b>Сотрудник несёт сумки до двери</b><span>до 1 км, утром, без доплаты</span></div></div></div>
+  <div class="card pink"><div class="row"><h5>Бабушка</h5><span class="badge">доставка сегодня 10:40</span></div><p class="p">ул. Ленина, 12 · 600 м от магазина · сотрудник Анна</p></div>
+  <button class="btn" id="senBtn">Подключить бабушке из моего аккаунта</button>
+</section>
+<section id="pets" data-t="Питомцы">
+  <div class="card"><h5>Магнитики в зоомагазинах-партнёрах</h5><div class="li"><div class="av" style="background:#0a8">З</div><div class="f"><b>Зоомагазин у дома</b><span>корма и ветпрепараты · пример партнёра</span></div></div><div class="li"><div class="av" style="background:#7a5cff">В</div><div class="f"><b>Ветклиника</b><span>−10% приём по пакету</span></div></div></div>
+  <div class="card pink"><p>Магнитики за продукты в Магните тратятся на корм для кота. Покупки для питомца дают ×2 магнитика</p></div>
+</section>
+<section id="partners" data-t="Партнёры">
+  <div class="card"><h5>Образование</h5><div class="li"><div class="f"><b>Онлайн-школа английского</b><span>2 урока бесплатно</span></div><button class="btn sm sec">Активировать</button></div><div class="li"><div class="f"><b>Студия развития у дома</b><span>−15% абонемент</span></div><button class="btn sm sec">Активировать</button></div></div>
+  <div class="card"><h5>Здоровье</h5><div class="li"><div class="f"><b>Педиатр онлайн 24/7</b><span>консультация в пакете</span></div><button class="btn sm sec">Открыть</button></div><div class="li"><div class="f"><b>Анализы в лаборатории</b><span>−20% по номеру телефона</span></div><button class="btn sm sec">Открыть</button></div></div>
+  <p class="mut">Предложения активируются по номеру телефона, без промокодов</p>
+</section>
+
+  </main>
+  <button class="cartbar" id="cartbar" data-go="cart"><span id="cbN">Корзина</span><span id="cbS"></span></button>
+  <nav class="tabs" id="tabs" aria-label="Разделы"></nav>
+  <div class="shade" id="shade"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+</div></div>
+</div>
+
+<script>
+{
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const fmt=n=>Math.round(n).toLocaleString('ru-RU').replace(/ |,/g,' ');
+const IC={cart:'<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M3 4h2l2.5 11h11L21 8H6.5"/>',ai:'<path d="M12 3v3M12 18v3M3 12h3M18 12h3M6 6l2 2M16 16l2 2M6 18l2-2M16 8l2-2"/><circle cx="12" cy="12" r="3"/>',meal:'<path d="M4 11h16a8 8 0 0 1-16 0zM8 4v4M12 3v5M16 4v4"/>',mood:'<circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/>',star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',task:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 9h6M9 13h6M9 17h3"/>',gift:'<rect x="3" y="9" width="18" height="12" rx="2"/><path d="M12 9v12M3 13h18"/>',kid:'<circle cx="12" cy="7" r="3"/><path d="M6 21v-3a6 6 0 0 1 12 0v3"/>',users:'<circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2 20c0-3.5 3-6 6-6s6 2.5 6 6M14 20c0-2.5 1.5-4.5 4-4.5S22 17.5 22 20"/>',pig:'<path d="M4 12a7 6 0 0 1 14-1h2v4h-2a7 6 0 0 1-3 3v2h-3v-1h-2v1H7v-2a6 6 0 0 1-3-6z"/>',wallet:'<rect x="3" y="6" width="18" height="13" rx="3"/><path d="M16 12h3"/>',plus:'<path d="M12 5v14M5 12h14"/>',senior:'<circle cx="12" cy="5" r="2.5"/><path d="M12 8v6l-3 7M12 14l3 7M8 11h8M18 11v10"/>',paw:'<circle cx="7" cy="9" r="2"/><circle cx="17" cy="9" r="2"/><circle cx="10" cy="5" r="1.7"/><circle cx="14" cy="5" r="1.7"/><path d="M8 17a4 4 0 0 1 8 0c0 2-2 3-4 3s-4-1-4-3z"/>',med:'<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/>',school:'<path d="M3 9l9-5 9 5-9 5z"/><path d="M7 11v5c3 2 7 2 10 0v-5"/>',split:'<path d="M12 3v7M12 10l-6 8M12 10l6 8"/>'};
+const svg=k=>`<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${IC[k]||IC.star}</svg>`;
+const PK={single:{n:'Без хлопот',p:299},fam:{n:'Семейный +',p:449},kids:{n:'Детский',p:249},pets:{n:'Питомцы',p:199},sen:{n:'55+ Забота',p:149},all:{n:'Всё включено',p:799}};
+const SV={ai:{t:'Корзина на неделю',i:'ai',n:'6',pk:'fam',solo:199,go:'ai'},meals:{t:'Готовая еда',i:'meal',n:'2',pk:'single',solo:149,go:'meals'},moods:{t:'Под настроение',i:'mood',n:'4',go:'delivery'},fav:{t:'Любимый продукт',i:'star',n:'1',pk:'single',solo:79,go:'fav'},
+ delivery:{t:'Доставка',i:'cart',n:'4',go:'delivery'},recipes:{t:'Рецепты −7%',i:'meal',n:'12',go:'delivery'},
+ task:{t:'Поручить покупку',i:'task',n:'11',go:'task'},close:{t:'Корзина близким',i:'gift',n:'15',go:'close'},vouch:{t:'Карманные детям',i:'kid',n:'15',go:'vouch'},student:{t:'Сертификат студенту',i:'school',n:'10',go:'student'},split:{t:'Общая корзина',i:'split',n:'15',go:'split'},
+ wallet:{t:'Целевые счета',i:'wallet',n:'5',go:'wallet'},piggy:{t:'Копилка',i:'pig',n:'15',go:'piggy'},topup:{t:'Пополнить по СБП',i:'plus',n:'2',go:'topup'},care:{t:'Премиальная забота',i:'star',n:'13',go:'care'},
+ senior:{t:'Забота 55+',i:'senior',n:'8',pk:'sen',solo:199,go:'senior'},kids:{t:'Детский клуб',i:'kid',n:'7',pk:'kids',solo:99,go:'kids'},pets:{t:'Питомцы',i:'paw',n:'14',pk:'pets',solo:99,go:'pets'},partners:{t:'Здоровье и школы',i:'med',n:'9',pk:'fam',solo:199,go:'partners'}};
+const GROUPS=[['Покупки и еда',['delivery','ai','meals','moods','fav','recipes']],['Семья',['task','close','vouch','student','split']],['Деньги',['wallet','piggy','topup','care']],['Забота',['senior','kids','pets','partners']]];
+let subs={fam:true};const has=pk=>!pk||subs[pk]||subs.all;
+const tile=k=>{const s=SV[k];return`<button class="sv" data-svc="${k}"><span class="nb">${s.n}</span>${s.pk&&!has(s.pk)?`<span class="lk">${PK[s.pk].n}</span>`:''}<span class="ic">${svg(s.i)}</span>${s.t}</button>`};
+const renderCatalog=()=>{$('#catalog').innerHTML=GROUPS.map(([g,ks])=>`<div class="grp"><h5>${g}</h5><div class="svc">${ks.map(tile).join('')}</div></div>`).join('');$('#famSvc').innerHTML=['task','close','vouch','student','split','piggy','senior','kids'].map(tile).join('')};
+$('#stories').innerHTML=[['Корзина на неделю','#EC1D27','ai'],['Копилка на море','#1A1A1A','piggy'],['Клуб заботы','#C8941A','club'],['Маме без смартфона','#0a8','senior'],['Рецепт недели','#7a5cff','delivery']].map(([t,c,g])=>`<button class="story" style="background:${c}" ${SV[g]?`data-svc="${g}"`:`data-go="${g}"`}>${t}</button>`).join('');
+const MAP=[[1,'1','Один QR и оплата','pay'],[1,'2','Пополнение по СБП','topup'],[1,'3','Без интернета','pay'],[1,'5','Целевые счета','wallet'],[2,'15','Кошелёк семьи и магнитики','home'],[2,'15','Копилка ВТБ','piggy'],[2,'11','Поручить покупку по QR','task'],[2,'13','Кешбэк за оборот','care'],[2,'10','Сертификат студенту','student'],[2,'15','Корзина близким','close'],[2,'15','Карманные детям','vouch'],[2,'15','Общая корзина','split'],[2,'5','Пополнить маме','topupRel'],[3,'★','6 пакетов','plans'],[3,'★','Клуб и рейтинг','club'],[3,'★','Экосистема и партнёры','eco'],[3,'6','ИИ-корзина','ai'],[3,'12','Рецепты в корзине','delivery'],[3,'2','Готовая еда','meals'],[3,'3','Умный ужин','meals'],[3,'4','Подборки и доставка','delivery'],[3,'1','Любимый продукт','fav'],[3,'7','Детский','kids'],[3,'8','55+ Забота','senior'],[3,'9','Партнёры','partners'],[3,'14','Питомцы','pets']];
+for(const el of $$('[data-links]'))el.innerHTML=MAP.filter(m=>m[0]==el.dataset.links).map(m=>`<a href="#${m[3]}" data-go="${m[3]}">${m[2]}</a>`).join('');
+const TB=[['home','Главная','<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'],['delivery','Доставка',IC.cart],['pay','',''],['family','Семья',IC.users],['profile','Профиль','<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>']];
+$('#tabs').innerHTML=TB.map(([id,t,p])=>id==='pay'?`<button class="tab qrb" data-tab="pay" aria-label="Оплатить по QR"><span class="c"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" width="26" height="26"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v7h-6"/></svg></span>QR</button>`:`<button class="tab" data-tab="${id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">${p}</svg>${t}</button>`).join('');
+const ROOT=['home','delivery','pay','family','profile'];let hist=[];
+function show(id,push=true){const _i=document.querySelector('.inner'),_p=document.querySelector('.phone');if(_i)_i.scrollTop=0;if(_p)_p.scrollTop=0;const s=document.getElementById(id);if(!s||s.tagName!=='SECTION')return;const cur=$('section.on');if(cur&&push&&cur.id!==id)hist.push(cur.id);$$('section').forEach(x=>x.classList.toggle('on',x===s));$('#ttl').textContent=s.dataset.t;$('#back').hidden=ROOT.includes(id);$$('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab===id));$$('.map a').forEach(a=>a.classList.toggle('on',a.dataset.go===id));$('#main').scrollTop=0;if(location.hash!=='#'+id)history.replaceState(null,'','#'+id);$('#map').classList.remove('open');if(id==='cart')renderCart();if(id==='ai')aiRender();cartBar()}
+function openSvc(k){const s=SV[k];if(s.pk&&!has(s.pk)){paywall(k);return}show(s.go)}
+document.addEventListener('click',e=>{const v=e.target.closest('[data-svc]');if(v){e.preventDefault();openSvc(v.dataset.svc);return}const g=e.target.closest('[data-go]');if(g){e.preventDefault();show(g.dataset.go);return}const t=e.target.closest('[data-tab]');if(t){hist=[];show(t.dataset.tab,false)}});
+$('#back').onclick=()=>show(hist.pop()||'home',false);
+$('#openMap').onclick=()=>$('#map').classList.add('open');$('#closeMap').onclick=()=>$('#map').classList.remove('open');
+let tt;function toast(m){$('#toastT').innerHTML=m;$('#toast').classList.add('on');clearTimeout(tt);tt=setTimeout(()=>$('#toast').classList.remove('on'),3400)}
+const closeSheet=()=>{$('#sheet').classList.remove('on');$('#shade').classList.remove('on')};$('#shade').onclick=closeSheet;
+function paywall(k){const s=SV[k],p=PK[s.pk];$('#sheet').innerHTML=`<div class="grab"></div><span class="badge">${s.n} · ${s.t}</span><h2>Входит в пакет «${p.n}»</h2><p class="p">Все услуги пакета за ${p.p} ₽ в месяц или только эта услуга за ${s.solo} ₽ в месяц. Отключить можно в одно нажатие.</p><div class="opt"><button class="ob on" data-o="pk"><b>Пакет «${p.n}»</b><br>${p.p} ₽ в мес.</button><button class="ob" data-o="solo"><b>Только эта услуга</b><br>${s.solo} ₽ в мес.</button></div><label class="check"><input type="checkbox" id="pwAgree"> Согласен(на) на ежемесячное списание</label><button class="btn" id="pwGo">Подключить</button><button class="btn ghost" id="pwPlans">Сравнить все пакеты</button>`;
+ $('#sheet').classList.add('on');$('#shade').classList.add('on');let mode='pk';
+ $('#sheet').querySelectorAll('.ob').forEach(b=>b.onclick=()=>{mode=b.dataset.o;$('#sheet').querySelectorAll('.ob').forEach(x=>x.classList.toggle('on',x===b))});
+ $('#pwPlans').onclick=()=>{closeSheet();show('plans')};
+ $('#pwGo').onclick=()=>{if(!$('#pwAgree').checked){toast('Отметьте согласие: без него ничего не подключится');return}if(mode==='pk')subs[s.pk]=true;else SV[k].pk=null;closeSheet();renderCatalog();myPk();plan();toast(mode==='pk'?`«${p.n}» подключён, статус в клубе обновлён`:`Услуга «${s.t}» подключена`);show(s.go)}}
+function qr(el,seed){let h='',x=seed;for(let i=0;i<441;i++){x=(x*9301+49297)%233280;const r=Math.floor(i/21),c=i%21;const inF=(r<7&&c<7)||(r<7&&c>13)||(r>13&&c<7);let k;if(inF){const rr=r>13?r-14:r,cc=c>13?c-14:c;k=Math.max(Math.abs(rr-3),Math.abs(cc-3))!==2}else k=x/233280>.5;h+=`<i class="${k?'k':''}"></i>`}el.innerHTML=h}
+qr($('#qrPay'),7);qr($('#qrTask'),42);
+let mag=1240,bal=6480,pig=74400;const upd=()=>{$('#hMag').textContent=fmt(mag);$('#hBal').textContent=fmt(bal)+' ₽';$('#hPig').textContent=fmt(pig)+' ₽';$('#hPigBar').style.width=(pig/1200)+'%';$('#pSum').textContent=fmt(pig)+' ₽';$('#pBar').style.width=(pig/1200)+'%'};
+for(const g of $$('.chips')){if(['newAcc','days'].includes(g.id))continue;g.addEventListener('click',e=>{const c=e.target.closest('button.chip');if(!c)return;g.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===c))})}
+$('#days').onclick=e=>{const c=e.target.closest('.chip');if(c)c.classList.toggle('on')};
+const PROD={milk:['Молоко 3,2%',89,'#4aa3ff'],bread:['Хлеб бородинский',59,'#a0522d'],ban:['Бананы 1 кг',139,'#c99a00'],cheese:['Сыр «Российский»',219,'#d08a2a'],egg:['Яйца С1, 10 шт',119,'#a86f3a'],tvor:['Творог 5%',129,'#5f7fe0'],kef:['Кефир 1%',79,'#3c8dde'],apple:['Яблоки 1 кг',119,'#2f8f4a']};
+const RECIPES=[{id:'borsch',t:'Борщ',c:'#b3262f',time:'90 мин',ing:[['Свёкла 1 кг',69,0],['Капуста 1 кг',39,0],['Говядина 500 г',459,1,'Мираторг'],['Сметана 15%',89,1,'Ока'],['Картофель 1,5 кг',75,0],['Томатная паста',79,1,'Нива']]},{id:'syrn',t:'Сырники',c:'#c0761f',time:'25 мин',ing:[['Творог 5% 400 г',219,1,'Простоквашино'],['Яйца С1, 10 шт',119,0],['Мука 1 кг',69,0],['Сметана 15%',89,1,'Ока']]},{id:'pasta',t:'Паста с курицей',c:'#6b4fe0',time:'30 мин',ing:[['Спагетти 450 г',89,0],['Куриное филе 600 г',289,1,'Петелинка'],['Сливки 20%',129,0],['Сыр «Российский»',219,0]]},{id:'plov',t:'Плов',c:'#a84d10',time:'70 мин',ing:[['Рис 1 кг',129,0],['Свинина 700 г',389,0],['Морковь 1 кг',49,0],['Лук 1 кг',39,0]]}];
+const MOODS=[['Праздничный вечер','#b3262f'],['Побаловать себя','#c0761f'],['Когда грустно','#4b5bc6'],['Быстрый перекус','#168A4C']];
+let cart=[];
+const addCart=(n,p,opt={})=>{const e=cart.find(x=>x.n===n&&x.rec===opt.rec);if(e)e.q++;else cart.push({n,p,q:1,...opt});cartBar()};
+function cartBar(){const id=($('section.on')||{}).id;const on=cart.length&&['delivery','recipe','home','mood'].includes(id);$('#cartbar').classList.toggle('on',!!on);$('#cbN').textContent=`Корзина · ${cart.reduce((a,x)=>a+x.q,0)} шт.`;$('#cbS').textContent=fmt(cart.reduce((a,x)=>a+x.p*x.q,0))+' ₽ ›'}
+$('#recShelf').innerHTML=RECIPES.map(r=>`<button class="rec" data-rec="${r.id}"><div class="im" style="background:${r.c}">${r.t}</div><div class="tx">${r.time} · ${r.ing.length} ингредиентов</div></button>`).join('');
+$('#moodShelf').innerHTML=MOODS.map(([t,c])=>`<button class="rec" data-mood="${t}"><div class="im" style="background:${c};height:70px">${t}</div><div class="tx">подборка · 30 минут</div></button>`).join('');
+$('#popShelf').innerHTML=Object.entries(PROD).map(([k,[n,p,c]])=>`<div class="prod"><div class="im" style="background:${c}">${n.split(' ')[0]}</div><b>${n}</b><div class="pr"><span class="amt">${p} ₽</span><button class="plus" data-add="${k}" aria-label="Добавить ${n}">+</button></div></div>`).join('');
+document.addEventListener('click',e=>{const a=e.target.closest('[data-add]');if(a){const [n,p]=PROD[a.dataset.add];addCart(n,p);toast(n+' в корзине')}const r=e.target.closest('[data-rec]');if(r)openRecipe(r.dataset.rec);const m=e.target.closest('[data-mood]');if(m)openMood(m.dataset.mood)});
+const MP={'Праздничный вечер':[['Сыр «Российский»',219],['Колбаса нарезка',189],['Крекеры',99],['Оливки 280 г',149],['Сок 1 л',109],['Мороженое пломбир',129],['Торт «Прага»',399],['Шоколад молочный',99]],'Побаловать себя':[['Круассан и кофе',159],['Мороженое пломбир',129],['Шоколад тёмный',109],['Пирожное эклер',89],['Сыр камамбер',249],['Клубника 250 г',199]],'Когда грустно':[['Горячий шоколад',79],['Печенье овсяное',89],['Мороженое пломбир',129],['Пицца пепперони',299],['Попкорн',69],['Чай с бергамотом',119]],'Быстрый перекус':[['Сэндвич с курицей',149],['Йогурт питьевой',69],['Банан',29],['Орехи 100 г',129],['Батончик злаковый',59],['Вода 0,5 л',45]]};
+function openMood(t){$('#moodT').textContent=t;$('#moodList').innerHTML=MP[t].map(([n,p],i)=>`<div class="li"><div class="f"><b>${n}</b><span>быстрая доставка</span></div><span class="amt">${p} ₽</span><button class="plus" data-madd="${t}|${i}" aria-label="Добавить ${n}">+</button></div>`).join('');show('mood')}
+document.addEventListener('click',e=>{const a=e.target.closest('[data-madd]');if(a){const [t,i]=a.dataset.madd.split('|');const [n,p]=MP[t][+i];addCart(n,p);toast(n+' в корзине')}});
+
+let curRec=null,por=4;
+function openRecipe(id){curRec=RECIPES.find(r=>r.id===id);por=4;$('#recHero').style.background=curRec.c;$('#recHero').textContent=curRec.t;$('#recMeta').textContent=curRec.time+' · рецепт Магнита';recIng();show('recipe')}
+function recIng(){$('#pn').textContent=por;const k=por/4;$('#recIng').innerHTML=curRec.ing.map(([n,p,b,br])=>{const pr=Math.round(p*k);return`<div class="li"><div class="f"><b>${n}${b?' · '+br:''}</b><span class="disc">${b?'−15%: бренд-партнёр Магнита':'−7%: скидка по рецепту'}</span></div><span class="amt">${fmt(pr*(b?.85:.93))} ₽</span></div>`}).join('')}
+$('#pm').onclick=()=>{por=Math.max(1,por-1);recIng()};$('#pp').onclick=()=>{por=Math.min(12,por+1);recIng()};
+$('#recAdd').onclick=()=>{const k=por/4;curRec.ing.forEach(([n,p,b])=>addCart(n,Math.round(p*k),{rec:curRec.t,partner:!!b}));toast(`Ингредиенты «${curRec.t}» в корзине, скидка применится сама`);show('cart')};
+function renderCart(){if(!cart.length){$('#cartList').innerHTML='<p class="mut">Корзина пуста. Добавьте рецепт или товары на вкладке «Доставка»</p>'}else{const groups={};cart.forEach(x=>{const g=x.rec?'По рецепту «'+x.rec+'»':'Товары';(groups[g]=groups[g]||[]).push(x)});$('#cartList').innerHTML=Object.entries(groups).map(([g,xs])=>`<h5 style="margin:6px 0">${g}</h5>`+xs.map(x=>`<div class="li"><div class="f"><b>${x.n}</b><span class="${x.rec?'disc':''}">${x.rec?(x.partner?'−15% бренд-партнёр':'−7% по рецепту'):'× '+x.q}</span></div><span class="amt">${fmt(x.p*x.q)} ₽</span></div>`).join('')).join('')}
+ const sum=cart.reduce((a,x)=>a+x.p*x.q,0),r7=cart.filter(x=>x.rec&&!x.partner).reduce((a,x)=>a+x.p*x.q*.07,0),r15=cart.filter(x=>x.rec&&x.partner).reduce((a,x)=>a+x.p*x.q*.15,0);const after=sum-r7-r15;const mm=$('#cMag').checked?Math.min(mag,Math.floor(after*.5)):0;
+ $('#cSum').textContent=fmt(sum)+' ₽';$('#cR7').textContent='−'+fmt(r7)+' ₽';$('#cR15').textContent='−'+fmt(r15)+' ₽';$('#cMagV').textContent='−'+fmt(mm);$('#cTot').textContent=fmt(after-mm)+' ₽';$('#cBuy').dataset.t=after-mm;$('#cBuy').dataset.m=mm;$('#cBuy').disabled=!cart.length}
+$('#cMag').onchange=renderCart;
+$('#cBuy').onclick=()=>{const t=+$('#cBuy').dataset.t,m=+$('#cBuy').dataset.m;mag=mag-m+Math.round(t*.01);bal-=t;pig+=100;cart=[];upd();toast(`Заказ оформлен: ${fmt(t)} ₽ со счёта «Продукты», −${m} магнитиков, +100 ₽ в копилку`);show('home')};
+let st=0;const A={ad:2,ch:1,meals:['Завтрак','Ужин'],days:7,no:['Рыба'],home:['Крупы','Яйца'],tech:['Духовка','Мультиварка'],budget:7000,recs:['syrn','borsch'],link:''};
+const tog=(arr,v)=>{const i=arr.indexOf(v);i>=0?arr.splice(i,1):arr.push(v)};
+const STEPS=[
+ ()=>`<span class="mut">Шаг 1 из 7</span><h2>Сколько вас?</h2><p class="mut">Посчитаем порции и объём на неделю</p><div class="card"><div class="row"><b>Взрослые</b><div class="cnt"><button data-c="ad,-1">−</button><b>${A.ad}</b><button data-c="ad,1">+</button></div></div><div class="row" style="margin-top:10px"><b>Дети</b><div class="cnt"><button data-c="ch,-1">−</button><b>${A.ch}</b><button data-c="ch,1">+</button></div></div></div>`,
+ ()=>`<span class="mut">Шаг 2 из 7</span><h2>Что готовите дома?</h2><p class="mut">Можно выбрать несколько</p><div class="opt">${['Завтрак','Обед','Ужин','Перекусы'].map(m=>`<button class="ob ${A.meals.includes(m)?'on':''}" data-t="meals,${m}">${m}</button>`).join('')}</div><div class="card"><b>Сколько дней в неделю</b><div class="chips" style="margin-top:8px">${[3,5,7].map(d=>`<button class="chip ${A.days===d?'on':''}" data-d="${d}">${d} дней</button>`).join('')}</div></div>`,
+ ()=>`<span class="mut">Шаг 3 из 7</span><h2>Что вы не едите?</h2><p class="mut">Исключим из рецептов и корзины</p><div class="opt">${['Рыба','Свинина','Орехи','Молочное','Глютен','Острое','Грибы','Ничего'].map(m=>`<button class="ob ${A.no.includes(m)?'on':''}" data-t="no,${m}">${m}</button>`).join('')}</div>`,
+ ()=>`<span class="mut">Шаг 4 из 7</span><h2>Что уже есть дома?</h2><p class="mut">Не купим лишнего и подберём рецепты под вашу технику</p><h5>Продукты</h5><div class="chips">${['Крупы','Яйца','Масло','Мука','Специи','Макароны'].map(m=>`<button class="chip ${A.home.includes(m)?'on':''}" data-t="home,${m}">${m}</button>`).join('')}</div><h5>Кухонная техника</h5><div class="chips">${['Духовка','Мультиварка','Блендер','Микроволновка','Аэрогриль'].map(m=>`<button class="chip ${A.tech.includes(m)?'on':''}" data-t="tech,${m}">${m}</button>`).join('')}</div>`,
+ ()=>`<span class="mut">Шаг 5 из 7</span><h2>Бюджет на неделю</h2><p class="mut">Корзина не выйдет за эту сумму</p><div class="card"><div class="big" id="bv">${fmt(A.budget)} ₽</div><input type="range" min="3000" max="15000" step="500" value="${A.budget}" id="br" aria-label="Бюджет"><p class="mut">Средняя корзина семьи вашего состава 7 200 ₽. На счёте «Продукты» 4 200 ₽</p></div>`,
+ ()=>`<span class="mut">Шаг 6 из 7</span><h2>Выберите блюда</h2><p class="mut">Подобрали под ${A.ad+A.ch} человек, без «${A.no.join(', ')||'—'}», под вашу технику</p><div class="opt">${RECIPES.filter(r=>!(A.no.includes('Свинина')&&r.id==='plov')).map(r=>`<button class="ob ${A.recs.includes(r.id)?'on':''}" data-r="${r.id}"><b>${r.t}</b><br><span class="mut">${r.time} · рецепт Магнита</span></button>`).join('')}</div><div class="card"><b>Своё блюдо по ссылке</b><div class="row" style="margin-top:8px"><input class="inp" id="lk" style="flex:1;width:auto" placeholder="eda.ru/recepty/..." value="${A.link}" aria-label="Ссылка на рецепт"><button class="btn sm" id="lkGo" style="flex:none">Разобрать</button></div><p class="mut" style="margin-top:6px" id="lkRes">${A.link?'Лазанья: 5 ингредиентов распознаны':'Помощник найдёт ингредиенты и добавит их в корзину'}</p></div><label class="check"><input type="checkbox" checked> Пропустить блюда прошлой недели (паста с курицей)</label>`,
+ ()=>{const items=aiItems();const sum=items.reduce((a,x)=>a+x.p,0);return`<span class="mut">Шаг 7 из 7</span><h2>Корзина на неделю</h2><div class="card red"><div class="row"><div><div style="font-size:12px;font-weight:700;color:#ffd5d7">Итого, скидки по рецептам уже учтены</div><div class="big">${fmt(sum)} ₽</div></div><span class="badge" style="background:#fff">${fmt(A.budget-sum)} ₽ в запасе</span></div></div><div class="card">${items.map(x=>`<div class="li"><div class="f"><b>${x.n}</b><span class="${x.d?'disc':''}">${x.g}${x.d?' · '+x.d:''}</span></div><span class="amt">${fmt(x.p)} ₽</span></div>`).join('')}</div>`}];
+function aiItems(){const k=(A.ad+A.ch*.6)/2.6*A.days/7;const it=[];A.recs.forEach(id=>{const r=RECIPES.find(x=>x.id===id);r.ing.forEach(([n,p,b,br])=>{if(A.home.some(h=>n.startsWith(h.slice(0,4))))return;it.push({n:n+(b?' · '+br:''),p:Math.round(p*k*(b?.85:.93)),g:r.t,d:b?'−15% бренд':'−7% по рецепту'})})});if(A.link)it.push({n:'Лазанья: листы, фарш, соус, сыр',p:Math.round(690*k*.93),g:'По ссылке',d:'−7% по рецепту'});[['Молоко и кефир',420],['Фрукты',540],['Хлеб',180],['Овощи для салатов',460],['Мясо и птица на неделю',1400],['Сыр и колбаса',650],['Гарниры: крупы, макароны',320],['К чаю',380]].forEach(([n,p])=>it.push({n,p:Math.round(p*k*Math.max(1,A.meals.length)/2),g:'База недели',d:''}));const s=it.reduce((a,x)=>a+x.p,0);if(s>A.budget){const f=A.budget/s*.97;it.forEach(x=>x.p=Math.round(x.p*f))}return it}
+function aiRender(){$('#aiSteps').innerHTML=STEPS.map((_,i)=>`<i class="${i<=st?'on':''}"></i>`).join('');$('#aiBody').innerHTML=STEPS[st]();$('#aiPrev').disabled=st===0;$('#aiNext').textContent=st===STEPS.length-1?'Положить в корзину':'Дальше';const br=$('#br');if(br)br.oninput=()=>{A.budget=+br.value;$('#bv').textContent=fmt(A.budget)+' ₽'};const lk=$('#lkGo');if(lk)lk.onclick=()=>{A.link=$('#lk').value||'eda.ru/recepty/lazanya';$('#lkRes').textContent='Лазанья: 5 ингредиентов распознаны и добавлены';toast('Рецепт разобран, ингредиенты добавлены')}}
+$('#aiBody').addEventListener('click',e=>{const c=e.target.closest('[data-c]');if(c){const [k,d]=c.dataset.c.split(',');A[k]=Math.max(k==='ad'?1:0,A[k]+ +d);aiRender();return}const t=e.target.closest('[data-t]');if(t){const [k,v]=t.dataset.t.split(',');if(v==='Ничего')A[k]=[];else tog(A[k],v);aiRender();return}const d=e.target.closest('[data-d]');if(d){A.days=+d.dataset.d;aiRender();return}const r=e.target.closest('[data-r]');if(r){tog(A.recs,r.dataset.r);aiRender()}});
+$('#aiPrev').onclick=()=>{if(st>0){st--;aiRender()}};
+$('#aiNext').onclick=()=>{if(st<STEPS.length-1){st++;aiRender();$('#main').scrollTop=0}else{aiItems().forEach(x=>cart.push({n:x.n,p:x.p,q:1,rec:x.g==='База недели'?null:x.g,partner:x.d.includes('15')}));st=0;toast('Корзина на неделю собрана, выберите слот доставки');show('cart')}};
+$('#offT').onchange=e=>{$('#net').textContent=e.target.checked?'нет сети':'5G ▮▮▮';$('#offB').textContent=e.target.checked?'Офлайн: QR действует':'Работает без интернета';if(e.target.checked)toast('Связи нет, но QR действует: касса проведёт оплату, когда выйдет в сеть')};
+$('#payBtn').onclick=()=>{const m=Math.min(mag,644);const t=1840-m;mag=mag-m+Math.round(t*.01);bal-=t;pig+=100;upd();toast(`Чек 1 840 ₽: −${m} магнитиков, ${fmt(t)} ₽ со счёта «Продукты», +100 ₽ в копилку`);show('home')};
+const ACC=[['Продукты',4200,7000,'#EC1D27','Магнит'],['Аптека',1300,2000,'#168A4C','Магнит Аптека'],['Косметика',980,1500,'#6b4fe0','Магнит Косметик']];
+const accs=()=>$('#accs').innerHTML=ACC.map(([n,v,l,c,w])=>`<div class="card" style="margin-bottom:8px"><div class="row"><h5>${n}</h5><span class="amt">${fmt(v)} ₽</span></div><div class="bar" style="margin-top:8px"><i style="width:${Math.min(100,v/l*100)}%;background:${c}"></i></div><p class="mut" style="margin-top:6px">Лимит на неделю ${fmt(l)} ₽ · ${w}</p></div>`).join('');accs();
+$('#newAcc').onclick=e=>{const c=e.target.closest('.chip');if(!c)return;ACC.push([c.textContent,0,3000,'#333','все форматы']);c.remove();accs();toast('Счёт «'+c.textContent+'» открыт')};
+$('#ops').innerHTML=[['Магнит у дома','счёт «Продукты»','−1 540 ₽'],['Пополнение от Игоря','СБП, ВТБ','+5 000 ₽'],['Магнит Аптека','счёт «Аптека»','−420 ₽'],['Взнос в копилку','с покупки','−100 ₽']].map(([a,b,c])=>`<div class="li"><div class="f"><b>${a}</b><span>${b}</span></div><span class="amt">${c}</span></div>`).join('');
+$('#tuBtn').onclick=()=>{const v=+($('#tuSum').value.replace(/\D/g,''))||0;bal+=v;mag+=50;upd();toast(`+${fmt(v)} ₽ по СБП без комиссии и +50 магнитиков`);show('home')};
+$('#relBtn').onclick=()=>{toast('Бабушке зачислено 5 000 ₽ на «Продукты». Остаток она увидит на кассе по своей карте');show('home')};
+$('#auto').onclick=e=>{const c=e.target.closest('.chip');if(c)$('#autoM').textContent=fmt(parseInt(c.textContent)*25)+' ₽'};
+const MEM=[['О','Ольга (вы)','владелец, все права','#EC1D27'],['И','Игорь','общий баланс, задания','#333'],['М','Маша, 12','карманные 1 500 ₽ в неделю','#6b4fe0'],['Б','Бабушка','55+, пластиковая карта','#0a8']];
+const mem=()=>$('#members').innerHTML=MEM.map(([a,n,r,c])=>`<div class="li"><div class="av" style="background:${c}">${a}</div><div class="f"><b>${n}</b><span>${r}</span></div></div>`).join('');mem();
+$('#addM').onclick=()=>{MEM.push(['К','Коллега Катя','только общая корзина','#b07000']);mem();toast('Приглашение отправлено по номеру телефона')};
+let TL=['Молоко 3,2%','Хлеб бородинский','Бананы','Сыр «Российский»'],sent=false;const tl=()=>$('#tList').innerHTML=TL.map(n=>`<div class="li"><div class="f"><b>${n}</b></div><span class="amt">× 1</span></div>`).join('');tl();
+$('#tSend').onclick=()=>{sent=true;$('#tQR').hidden=false;$('#tState').textContent='отправлено';toast('Игорю пришёл QR-код задания')};
+$('#tAdd').onclick=()=>{TL.push('Сметана 15%');tl();$('#tAdd').hidden=true;toast(sent?'Игорь уже в магазине: ему пришло уведомление «+1 товар в задании»':'Добавлено')};
+$('#tScan').onclick=()=>{$('#tKassa').hidden=false;$('#kList').innerHTML=[['Молоко 3,2%',1],['Хлеб бородинский',1],['Бананы',1],['Сыр «Голландский»',0]].map(([n,ok])=>ok?`<div class="li"><div class="f"><b>${n}</b><span>совпадает</span></div><span class="yes">✓</span></div>`:`<div class="err"><b>${n}</b><br><span class="p">Не из задания. Нужен <b>Сыр «Российский»</b>, полка 7 справа</span></div>`).join('')+(TL.length>4?'<div class="li"><div class="f"><b>Сметана 15%</b><span>добавлено 2 минуты назад</span></div><span class="badge">не взято</span></div>':'');toast('Касса подала сигнал: один товар не совпадает')};
+$('#cake').onclick=()=>{addCart('Торт «Наполеон» −20%',479);toast('Торт для бабушки в корзине со скидкой 20%')};
+$('#sendGran').onclick=()=>toast('Оплачено 1 120 ₽. Сотрудник магазина донесёт продукты бабушке завтра утром');
+$('#splitBtn').onclick=()=>toast('Каждый получил ссылку на свою часть. Доставка одна, 59 ₽ разделили на троих');
+$('#dep').onclick=e=>{const c=e.target.closest('.chip');if(c)$('#depM').textContent=fmt(c.dataset.v/9)+' ₽'};
+$('#offers').innerHTML=['Куриное филе −25%','Творог −20%','Гречка −15%','Яблоки −20%','Йогурт −15%','Хлеб −10%'].map(x=>`<div class="ob" style="cursor:default">${x}</div>`).join('');
+$('#stBtn').onclick=()=>toast('Сертификат оформлен: именная карта придёт внуку, бабушка видит остаток');
+$('#dinner').onclick=()=>toast('<b>Ужин на сегодня готов</b><br>Паста и салат на 640 ₽ (−10%). Привезти к 19:30 или забрать по QR?');
+$('#mealsGo').onclick=()=>toast('Расписание сохранено: Пн, Ср, Пт. Списание со счёта «Продукты» в день доставки');
+$('#favList').innerHTML=['Молоко 3,2%','Кофе молотый','Сыр «Российский»','Куриное филе','Йогурт питьевой','Бананы'].map(f=>`<button class="ob" data-fav="${f}"><b>${f}</b><br><span class="mut">−7% на неделю</span></button>`).join('');
+$('#favList').onclick=e=>{const b=e.target.closest('[data-fav]');if(!b)return;toast(`«${b.dataset.fav}» со скидкой 7% с понедельника`);show('delivery')};
+let ks=3100;const COL=['Ёжик','Лис','Сова','Олень','Медведь','Заяц'];const owned=[0,1,2];
+const coll=()=>$('#coll').innerHTML=COL.map((c,i)=>`<div class="sv" style="cursor:default;min-height:64px;${owned.includes(i)?'background:var(--pink)':''}">${owned.includes(i)?'✓ ':''}${c}</div>`).join('');coll();
+$('#kBuy').onclick=()=>{ks+=900;$('#kSum').textContent=fmt(ks)+' ₽';$('#kBar').style.width=Math.min(100,ks/40)+'%';if(ks>=4000){owned.push(3);coll();$('#kBuy').disabled=true;toast('4 000 ₽ набрано! Игрушка «Олень» за 1 ₽ ждёт на кассе')}};
+$('#senBtn').onclick=()=>{subs.sen=true;renderCatalog();myPk();toast('«55+ Забота» подключена бабушке. Кассир увидит значок по её карте')};
+$('#big').onchange=e=>$('#app').classList.toggle('big55',e.target.checked);
+$('#chal').onclick=()=>toast('Вызов принят. Списки покупок для всей семьи в разделе «Семья»');
+const PL=[['single','Одиночки 25–40',[['Любимый продукт −7%',79],['Готовая еда по подписке',149],['Умный ужин',49],['Быстрая доставка без лимита',199]]],['fam','Семьи с детьми',[['ИИ-корзина под бюджет',199],['Скидка 15% у брендов в рецептах',99],['Кешбэк 20% на категорию',149],['Здоровье и школы',199],['Скидки партнёров 10%',99]]],['kids','Семьи с детьми',[['Ранний доступ к коллекциям',99],['Бокс на день рождения',199],['Скидки на кружки',149]]],['pets','Владельцы питомцев',[['Кешбэк 15% на корма',149],['Автозаказ корма по графику',99],['Скидки ветклиник и зоомагазинов',100]]],['sen','Покупатели 55+',[['Доставка до двери утром',199],['Суммирование скидок',99]]],['all','Для всех',[['Все пять пакетов',1146],['Статус «Золотая семья»',0]]]];
+let cur='fam';$('#planTabs').innerHTML=PL.map(([k])=>`<button class="chip ${k===cur?'on':''}" data-p="${k}">${PK[k].n}</button>`).join('');
+function plan(){const [k,seg,f]=PL.find(x=>x[0]===cur);const p=PK[k].p;const sum=f.reduce((a,x)=>a+x[1],0);$('#planCard').innerHTML=`<div class="row"><h5>«${PK[k].n}»</h5><span class="badge">${seg}</span></div><div class="row" style="margin-top:6px;align-items:flex-end"><span class="big">${p} ₽</span><span class="mut" style="text-align:right">в месяц<br>по отдельности ${fmt(sum)} ₽ · выгода ${Math.round((1-p/sum)*100)}%</span></div>${f.map(([n,v])=>`<div class="li"><div class="f"><b>${n}</b></div><span class="mut">${v?v+' ₽ отдельно':'в пакете'}</span></div>`).join('')}${subs[k]?'<button class="btn ghost">Подключено · отключить</button>':`<label class="check" style="margin:10px 0"><input type="checkbox" id="agree"> Согласен(на) на списание ${p} ₽ в месяц</label><button class="btn" id="subBtn">Подключить</button>`}`;const sb=$('#subBtn');if(sb)sb.onclick=()=>{if(!$('#agree').checked){toast('Отметьте согласие');return}subs[k]=true;renderCatalog();myPk();plan();toast(`«${PK[k].n}» подключён`)}}
+$('#planTabs').onclick=e=>{const c=e.target.closest('[data-p]');if(c){cur=c.dataset.p;plan()}};
+const ROWS=[['Кошелёк, магнитики, копилка, СБП', 1, 1, 1, 1, 0, 1, 1], ['Поручить покупку, корзина близким', 1, 1, 1, 1, 0, 1, 1], ['Готовая еда, подборки, ужин', 0, 1, 0, 0, 0, 0, 1], ['ИИ-корзина и 15% в рецептах', 0, 0, 1, 0, 0, 0, 1], ['Кешбэк 20% на категорию', 0, 0, 1, 0, 0, 0, 1], ['Детские дропы и бокс', 0, 0, 0, 1, 0, 0, 1], ['Корм, ветклиники, зоомагазины', 0, 0, 0, 0, 1, 0, 1], ['Доставка до двери 55+', 0, 0, 0, 0, 0, 1, 1], ['Здоровье и школы', 0, 0, 1, 0, 0, 0, 1]];
+$('#cmp').innerHTML='<tr><th></th><th>Бесп.</th><th>Один.</th><th>Сем.+</th><th>Дет.</th><th>Пит.</th><th>55+</th><th>Всё</th></tr><tr><td>₽ в месяц</td><td>0</td><td>299</td><td>449</td><td>249</td><td>199</td><td>149</td><td>799</td></tr>'+ROWS.map(r=>`<tr><td>${r[0]}</td>${r.slice(1).map(v=>`<td class="${v?'yes':'no'}">${v?'✓':'·'}</td>`).join('')}</tr>`).join('');
+function myPk(){const ks=Object.keys(PK).filter(k=>subs[k]);$('#myPk').innerHTML=ks.length?ks.map(k=>`<div class="card line" style="margin-bottom:6px"><div class="row"><b>«${PK[k].n}»</b><span class="amt">${PK[k].p} ₽ в мес.</span></div></div>`).join(''):'<p class="mut">Пока только бесплатный «Семейный контур»</p>'}
+$('#board').innerHTML=[['1','Семья Петровых','31 покупка','#C8941A'],['2','Семья Ким','28 покупок','#8a8a8a'],['3','Ваша семья','24 покупки','#EC1D27'],['4','Семья Сафиных','22 покупки','#B87333']].map(([r,n,v,c])=>`<div class="li"${n==='Ваша семья'?' style="background:var(--pink);border-radius:10px;padding:10px 8px"':''}><div class="av" style="background:${c}">${r}</div><div class="f"><b>${n}</b><span>${v}</span></div></div>`).join('');
+renderCatalog();plan();myPk();upd();
+const MODS=[['ИИ-корзина под бюджет',199],['Умный ужин',49],['Быстрая доставка без лимита',199],['Кешбэк 20% на категорию',149],['Скидки партнёров',199]];const onM=new Set([0,3]);
+function rb(){const sum=[...onM].reduce((a,i)=>a+MODS[i][1],0);const price=onM.size>=3?Math.round(sum*.7):sum;$('#builder').innerHTML=MODS.map((m,i)=>`<label class="check li" style="cursor:pointer"><input type="checkbox" data-m="${i}" ${onM.has(i)?'checked':''}><div class="f"><b>${m[0]}</b></div><span class="amt">${m[1]} ₽</span></label>`).join('')+`<div class="row" style="margin-top:10px"><b>Итого в месяц</b><b class="big" style="font-size:22px;color:var(--red)">${fmt(price)} ₽</b></div><p class="mut">${onM.size>=3?'Скидка 30% за 3+ модуля, вместо '+fmt(sum)+' ₽':'Выберите ещё '+(3-onM.size)+' и получите −30%'}</p>${onM.size?'<button class="btn" id="bGo" style="margin-top:8px">Подключить набор</button>':''}`;const g=$('#bGo');if(g)g.onclick=()=>toast('Набор из '+onM.size+' модулей подключён за '+fmt(price)+' ₽ в месяц, напомним за 3 дня до списания')}
+$('#builder').addEventListener('change',e=>{const i=e.target.dataset.m;if(i===undefined)return;e.target.checked?onM.add(+i):onM.delete(+i);rb()});rb();
+setTimeout(()=>toast('<b>18:00 · «Магнит.Кулинар»</b><br>Собрали ваш ужин на 640 ₽. Доставить за 30 минут или собрать самим со скидкой 10%?'),1500);
+
+const start=(location.hash||'#home').slice(1);const se=document.getElementById(start);show(se&&se.tagName==='SECTION'?start:'home',false);
+addEventListener('hashchange',()=>{const h=location.hash.slice(1);const el=document.getElementById(h);if(el&&el.tagName==='SECTION')show(h)});
+}
+
+function addArrows(){document.querySelectorAll('.stories,.hs').forEach(el=>{if(el.parentNode.classList.contains('sw'))return;const w=document.createElement('div');w.className='sw';el.parentNode.insertBefore(w,el);w.appendChild(el);
+const L=document.createElement('button');L.className='sa l';L.innerHTML='‹';const R=document.createElement('button');R.className='sa r';R.innerHTML='›';w.appendChild(L);w.appendChild(R);
+const st=()=>{L.hidden=el.scrollLeft<5;R.hidden=el.scrollLeft+el.clientWidth>=el.scrollWidth-5};
+L.onclick=e=>{e.stopPropagation();el.scrollBy({left:-el.clientWidth*0.8})};R.onclick=e=>{e.stopPropagation();el.scrollBy({left:el.clientWidth*0.8})};
+el.addEventListener('scroll',st);new MutationObserver(st).observe(el,{childList:true});setTimeout(st,50);});}
+setTimeout(addArrows,300);document.addEventListener('click',()=>setTimeout(addArrows,300));
+</script>
+</body>
+</html>
